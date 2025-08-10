@@ -1,4 +1,3 @@
-// hooks/useSnapshot.ts
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 
@@ -19,7 +18,9 @@ export const useSnapshot = () => {
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = "snapshot.png";
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     }
 
     return dataUrl;

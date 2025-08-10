@@ -5,38 +5,7 @@ import type { Widget } from "./types";
 import { useWidgetStore } from "./store";
 import { UnionWidget } from "./components/UnionWidget";
 import { useSnapshot } from "./hooks/useSnapshot";
-
-const widgetsList: Widget[] = [
-  {
-    params: {
-      translate: [0, 0],
-      rotate: 0,
-      scale: [1, 1],
-    },
-    data: {
-      text: "Hello World",
-      color: "#000",
-      bgColor: "#fff",
-    },
-    id: 1,
-    type: "text",
-  },
-  {
-    params: {
-      translate: [100, 100],
-      rotate: 0,
-      scale: [1, 1],
-    },
-    data: {
-      src: "/img/image.jpg",
-      alt: "Placeholder Image",
-      width: 100,
-      height: 200,
-    },
-    id: 2,
-    type: "image",
-  },
-];
+import { widgetsList } from "./mock/widgetData";
 
 function App() {
   const {
@@ -67,7 +36,7 @@ function App() {
       if (active) {
         setIsActive(true);
       }
-    }, 1); // используем setTimeout для асинхронного обновления состояния
+    }, 0);
   };
 
   return (
