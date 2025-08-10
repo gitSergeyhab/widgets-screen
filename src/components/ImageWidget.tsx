@@ -8,7 +8,13 @@ export const ImageWidget: React.FC<IImageWidget> = ({
 }) => {
   return (
     <div>
-      <img src={src} alt={alt} width={width} height={height} />
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        style={{ objectFit: "contain" }}
+      />
     </div>
   );
 };

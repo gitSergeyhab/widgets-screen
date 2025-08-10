@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "./App.css";
 import { TransformableWrapper } from "./components/TransformableWrapper";
 import type { Widget } from "./types";
 import { useWidgetStore } from "./store";
 import { UnionWidget } from "./components/UnionWidget";
+import { useSnapshot } from "./hooks/useSnapshot";
 
 const widgetsList: Widget[] = [
   {
@@ -27,10 +28,10 @@ const widgetsList: Widget[] = [
       scale: [1, 1],
     },
     data: {
-      src: "https://i.pinimg.com/originals/3f/63/9f/3f639fd816a68ad71cbe6505658edb40.jpg",
+      src: "/img/image.jpg",
       alt: "Placeholder Image",
-      width: 200,
-      height: 100,
+      width: 100,
+      height: 200,
     },
     id: 2,
     type: "image",
@@ -40,15 +41,15 @@ const widgetsList: Widget[] = [
 function App() {
   const {
     widgets,
-
     setWidgets,
-    // addWidget,
+    undo,
+    redo,
     updateWidget,
-    // removeWidget,
-    // updateWidgetType,
+    isActive,
+    setIsActive,
   } = useWidgetStore();
 
-  const [isActive, setIsActive] = useState(false);
+  const { containerRef, handleSnapshot } = useSnapshot();
 
   useEffect(() => {
     setWidgets(widgetsList);
@@ -56,9 +57,23 @@ function App() {
 
   const log = () => console.log(JSON.stringify(widgets, null, 2));
 
+  const onButtonClick = () => {
+    log();
+    const active = isActive;
+    setIsActive(false);
+    setTimeout(() => {
+      handleSnapshot({ download: true });
+
+      if (active) {
+        setIsActive(true);
+      }
+    }, 1); // используем setTimeout для асинхронного обновления состояния
+  };
+
   return (
     <>
       <div
+        ref={containerRef}
         style={{
           width: "800px",
           height: "600px",
@@ -78,12 +93,14 @@ function App() {
           </TransformableWrapper>
         ))}
       </div>
-      <button onClick={log} type="button">
-        log
+      <button onClick={onButtonClick} type="button">
+        log and handleSnapshot
       </button>
       <button onClick={() => setIsActive(!isActive)} type="button">
         Toggle Active
       </button>
+      <button onClick={undo}>Undo</button>
+      <button onClick={redo}>Redo</button>
     </>
   );
 }

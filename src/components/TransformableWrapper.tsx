@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import Moveable from "react-moveable";
+// import React, { useRef } from "react";
+// import Moveable from "react-moveable";
 
 export interface WitgetParams {
   translate: [number, number];
@@ -9,43 +9,103 @@ export interface WitgetParams {
 
 type TransformableWrapperProps = {
   children: React.ReactNode;
-  //   id: number;
-  //   movedId: number | null;
-  //   setMobed: VoidFunction;
   widgetParams: WitgetParams;
   setWidgetParams: (widget: WitgetParams) => void;
   isActive: boolean;
 };
 
+// import { useWidgetStore } from "../store";
+
+// export const TransformableWrapper: React.FC<TransformableWrapperProps> = ({
+//   children,
+//   widgetParams,
+//   setWidgetParams,
+//   isActive,
+// }) => {
+//   const targetRef = useRef<HTMLDivElement>(null);
+//   const { startHistoryGroup, endHistoryGroup } = useWidgetStore();
+
+//   const { rotate, translate, scale } = widgetParams;
+
+//   return (
+//     <>
+//       <div
+//         ref={isActive ? targetRef : null}
+//         style={{
+//           cursor: "grab",
+//           display: "inline-block",
+//           transform: `
+//             translate(${translate[0]}px, ${translate[1]}px)
+//             rotate(${rotate}deg)
+//             scale(${scale[0]}, ${scale[1]})
+//           `,
+//           transformOrigin: "center center",
+//         }}
+//       >
+//         {children}
+//       </div>
+
+//       <Moveable
+//         target={isActive ? targetRef : null}
+//         draggable
+//         rotatable
+//         scalable
+//         keepRatio={false}
+//         origin={false}
+//         // Начало любой операции
+//         onDragStart={() => startHistoryGroup()}
+//         onRotateStart={() => startHistoryGroup()}
+//         onScaleStart={() => startHistoryGroup()}
+//         // Во время изменения — не пишем в историю
+//         onDrag={(e) => {
+//           setWidgetParams({
+//             ...widgetParams,
+//             translate: [e.beforeTranslate[0], e.beforeTranslate[1]],
+//           });
+//         }}
+//         onRotate={(e) => {
+//           setWidgetParams({ ...widgetParams, rotate: e.beforeRotation });
+//         }}
+//         onScale={(e) => {
+//           setWidgetParams({ ...widgetParams, scale: [e.scale[0], e.scale[1]] });
+//         }}
+//         // Конец операции
+//         onDragEnd={() => endHistoryGroup()}
+//         onRotateEnd={() => endHistoryGroup()}
+//         onScaleEnd={() => endHistoryGroup()}
+//       />
+//     </>
+//   );
+// };
+
+import { useWidgetStore } from "../store";
+import { useEffect, useRef } from "react";
+import Moveable from "react-moveable";
+
 export const TransformableWrapper: React.FC<TransformableWrapperProps> = ({
   children,
-  //   id,
-  //   setMobed,
-  //   movedId,
   widgetParams,
   setWidgetParams,
   isActive,
 }) => {
   const targetRef = useRef<HTMLDivElement>(null);
-  //   const [frame, setFrame] = useState({
-  //     translate: [0, 0],
-  //     rotate: 0,
-  //     scale: [1, 1],
-  //   });
+  const moveableRef = useRef<Moveable>(null);
+  const { startHistoryGroup, endHistoryGroup, widgets } = useWidgetStore();
 
   const { rotate, translate, scale } = widgetParams;
+
+  // Когда виджет обновился (в том числе через undo/redo) — обновляем рамку
+  useEffect(() => {
+    if (moveableRef.current) {
+      moveableRef.current.updateRect();
+    }
+  }, [widgetParams, widgets]); // можно оставить только widgetParams
 
   return (
     <>
       <div
-        // onDragStart={setMobed}
-        // onClick={setMobed}
-        // onMouseDown={setMobed}
-        // ref={id === movedId ? targetRef : null}
-        // ref={targetRef}
         ref={isActive ? targetRef : null}
         style={{
-          //   cursor: id === movedId ? "grabbing" : "pointer",
           cursor: "grab",
           display: "inline-block",
           transform: `
@@ -54,24 +114,23 @@ export const TransformableWrapper: React.FC<TransformableWrapperProps> = ({
             scale(${scale[0]}, ${scale[1]})
           `,
           transformOrigin: "center center",
-          //   border: "1px dashed gray",
-          //   padding: "10px",
-          //   background: "rgba(0,0,0,0.05)",
         }}
       >
         {children}
       </div>
 
       <Moveable
+        ref={moveableRef}
         target={targetRef}
-        // onDragStart={() => setMobed()}
         draggable
         rotatable
         scalable
         keepRatio={false}
         origin={false}
+        onDragStart={() => startHistoryGroup()}
+        onRotateStart={() => startHistoryGroup()}
+        onScaleStart={() => startHistoryGroup()}
         onDrag={(e) => {
-          // when Moveable does the drag, use its beforeTranslate
           setWidgetParams({
             ...widgetParams,
             translate: [e.beforeTranslate[0], e.beforeTranslate[1]],
@@ -83,6 +142,9 @@ export const TransformableWrapper: React.FC<TransformableWrapperProps> = ({
         onScale={(e) => {
           setWidgetParams({ ...widgetParams, scale: [e.scale[0], e.scale[1]] });
         }}
+        onDragEnd={() => endHistoryGroup()}
+        onRotateEnd={() => endHistoryGroup()}
+        onScaleEnd={() => endHistoryGroup()}
       />
     </>
   );
